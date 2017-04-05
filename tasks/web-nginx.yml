@@ -3,26 +3,26 @@
 
 # Check whether the web configuration needs to be regenerated
 
-- name: omero web | check web timestamp
+- name: omero web | check OMERO.web symlink timestamp
   stat:
     follow: no
     path: "{{ omero_web_basedir }}/{{ omero_web_symlink }}"
-  register: omero_web_st
+  register: omero_web_symlink_st
 
-- name: omero web | check nginx timestamp
+- name: omero web | check nginx config timestamp
   stat:
     path: /etc/nginx/conf.d/omero-web.conf
-  register: omero_web_nginx_st
+  register: omero_web_nginx_config_st
 
-- name: omero web | check if nginx upgrade needed
+- name: omero web | check if nginx config update is needed
   set_fact:
     omero_web_nginx_update_needed: >
-      {{ (not omero_web_nginx_st.stat.exists) or
-         (omero_web_nginx_st.stat.ctime < omero_web_st.stat.ctime)
+      {{ (not omero_web_nginx_config_st.stat.exists) or
+         (omero_web_nginx_config_st.stat.ctime < omero_web_symlink_st.stat.ctime)
       }}
 
 - debug:
-    msg: "Nginx configuration needed? {{ omero_web_nginx_update_needed }}"
+    msg: "Nginx configuration deploy or update needed? {{ omero_web_nginx_update_needed }}"
 
 # This will generate a warning about running su, ignore it since we need to run as root for the redirection
 - name: omero web | generate nginx config
